@@ -1,24 +1,54 @@
+# This module is based on [Telemetry.Metrics.ConsoleReporter](https://github.com/beam-telemetry/telemetry_metrics/blob/main/lib/telemetry_metrics/console_reporter.ex) which is released under Apache License 2.0 
 defmodule InfluxTelemetryReporter do
   @moduledoc """
-  A reporter that writes the events in the influx_writer
-  This Reporter ignores the metric type and simply writes the report to influxdb
+  A reporter that writes the events in the influx_writer. 
+
+
+    * You have to bring your own InfluxDB writer when using this lib. We suggest [fluxter](https://hex.pm/packages/fluxter).
+    * This Reporter ignores the metric type(summary, count and etc) and simply writes the report to influxdb.
 
   This GenServer could be used in a Supervisor like:
 
-      children = [
-         {InfluxTelemetryReporter, metrics: metrics(), influx_writer: &MyApp.Fluxter.write/3}
-       ]
+      defmodule MyApp.Telemetry do
+        use Supervisor
+        import Telemetry.Metrics
+
+        def start_link(arg) do
+          Supervisor.start_link(__MODULE__, arg, name: __MODULE__)
+        end
+
+        @impl true
+        def init(_arg) do
+          children = [
+            {InfluxTelemetryReporter, metrics: metrics(), influx_writer: &MyApp.Fluxter.write/3}
+          ]
+
+          Supervisor.init(children, strategy: :one_for_one)
+        end
+
+        def metrics do
+          [
+            summary("vm.memory.total",
+              unit: {:byte, :kilobyte},
+              description: "measurement of the memory used by the Erlang VM"
+            )
+          ]
+        end
 
   by that it attaches itself to the events described in the metric and report the events
   to influxdb. Read more about metrics at https://hexdocs.pm/telemetry_metrics/Telemetry.Metrics.html
-
-  This module is based on Telemetry.Metrics.ConsoleReporter which
-  is released under Apache License 2.0
-  https://github.com/beam-telemetry/telemetry_metrics/blob/main/lib/telemetry_metrics/console_reporter.ex
   """
   use GenServer
   require Logger
 
+  @doc """
+  Starts the GenServer and attaches to the telemetry events
+
+  Expected options: 
+
+    * `:influx_writer`: a function that implements `c:Fluxter.write/3` callback
+    * `:metrics`: list of metrics `t:Telemetry.Metrics.t/0`
+  """
   def start_link(opts) do
     server_opts = Keyword.take(opts, [:name])
 
@@ -61,6 +91,7 @@ defmodule InfluxTelemetryReporter do
 
   # This function must follow logics as described:
   # https://hexdocs.pm/telemetry_metrics/writing_reporters.html#reacting-to-events
+  @doc false
   def handle_event(_event_name, measurements, metadata, {metrics, influx_writer}) do
     for %{} = metric <- metrics do
       event_name_in_string = Enum.join(metric.name, ".")
