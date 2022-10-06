@@ -1,7 +1,7 @@
-# This module is based on [Telemetry.Metrics.ConsoleReporter](https://github.com/beam-telemetry/telemetry_metrics/blob/main/lib/telemetry_metrics/console_reporter.ex) which is released under Apache License 2.0 
+# This module is based on [Telemetry.Metrics.ConsoleReporter](https://github.com/beam-telemetry/telemetry_metrics/blob/main/lib/telemetry_metrics/console_reporter.ex) which is released under Apache License 2.0
 defmodule InfluxTelemetryReporter do
   @moduledoc """
-  A reporter that writes the events in the influx_writer. 
+  A reporter that writes the events in the influx_writer.
 
 
     * You have to bring your own InfluxDB writer when using this lib. We suggest [fluxter](https://hex.pm/packages/fluxter).
@@ -44,7 +44,7 @@ defmodule InfluxTelemetryReporter do
   @doc """
   Starts the GenServer and attaches to the telemetry events
 
-  Expected options: 
+  Expected options:
 
     * `:influx_writer`: a function that implements `c:Fluxter.write/3` callback
     * `:metrics`: list of metrics `t:Telemetry.Metrics.t/0`
@@ -97,22 +97,19 @@ defmodule InfluxTelemetryReporter do
       event_name_in_string = Enum.join(metric.name, ".")
 
       try do
-        measurement = extract_measurement(metric, measurements, metadata)
-        tags = extract_tags(metric, metadata)
+        with true <- keep?(metric, metadata),
+             measurement when not is_nil(measurement) <-
+               extract_measurement(metric, measurements, metadata) do
+          tags = extract_tags(metric, metadata)
 
-        cond do
-          is_nil(measurement) ->
+          influx_writer.(
+            event_name_in_string,
+            Keyword.new(tags),
+            measurement
+          )
+        else
+          _ ->
             :skip
-
-          not keep?(metric, metadata) ->
-            :skip
-
-          true ->
-            influx_writer.(
-              event_name_in_string,
-              Keyword.new(tags),
-              measurement
-            )
         end
       rescue
         e ->

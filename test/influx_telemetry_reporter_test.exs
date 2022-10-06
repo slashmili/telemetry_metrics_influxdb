@@ -112,6 +112,95 @@ defmodule InfluxTelemetryReporterTest do
       assert_receive {"my_event.request.stop.duration", [], 1}
     end
 
+    test "Does not call measurement/1 function if keep returns false", %{
+      influx_writer: influx_writer
+    } do
+      test_pid = self()
+
+      metrics = [
+        Metrics.counter("my_event.request.stop.duration",
+          keep: fn metadata -> match?(%{keep_it: true}, metadata) end,
+          measurement: fn measurement ->
+            send(test_pid, {:measurement_function_called, measurement})
+          end
+        )
+      ]
+
+      assert {:ok, _} = SUT.start_link(metrics: metrics, influx_writer: influx_writer)
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: false})
+      refute_received {:measurement_function_called, _}
+
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: true})
+      assert_receive {:measurement_function_called, %{duration: 1}}
+    end
+
+    test "Does not call measurement/2 function if keep returns false", %{
+      influx_writer: influx_writer
+    } do
+      test_pid = self()
+
+      metrics = [
+        Metrics.counter("my_event.request.stop.duration",
+          keep: fn metadata -> match?(%{keep_it: true}, metadata) end,
+          measurement: fn measurement, metadata ->
+            send(test_pid, {:measurement_function_called, measurement, metadata})
+          end
+        )
+      ]
+
+      assert {:ok, _} = SUT.start_link(metrics: metrics, influx_writer: influx_writer)
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: false})
+      refute_received {:measurement_function_called, _, _}
+
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: true})
+      assert_receive {:measurement_function_called, %{duration: 1}, %{keep_it: true}}
+    end
+
+    test "Does not call tag_values/1 function if keep returns false", %{
+      influx_writer: influx_writer
+    } do
+      test_pid = self()
+
+      metrics = [
+        Metrics.counter("my_event.request.stop.duration",
+          keep: fn metadata -> match?(%{keep_it: true}, metadata) end,
+          tag_values: fn metadata ->
+            send(test_pid, {:tag_values, metadata})
+            %{}
+          end
+        )
+      ]
+
+      assert {:ok, _} = SUT.start_link(metrics: metrics, influx_writer: influx_writer)
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: false})
+      refute_received {:tag_values, _}
+
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: true})
+      assert_receive {:tag_values, %{keep_it: true}}
+    end
+
+    test "Does not call tag_values/1 function if measurement is nil", %{
+      influx_writer: influx_writer
+    } do
+      test_pid = self()
+
+      metrics = [
+        Metrics.counter("my_event.request.stop.duration",
+          tag_values: fn metadata ->
+            send(test_pid, {:tag_values, metadata})
+            %{}
+          end
+        )
+      ]
+
+      assert {:ok, _} = SUT.start_link(metrics: metrics, influx_writer: influx_writer)
+      :telemetry.execute([:my_event, :request, :stop], %{}, %{})
+      refute_received {:tag_values, _}
+
+      :telemetry.execute([:my_event, :request, :stop], %{duration: 1}, %{keep_it: true})
+      assert_receive {:tag_values, %{keep_it: true}}
+    end
+
     test "reports measurement based on measurement/1 function", %{influx_writer: influx_writer} do
       measurement_convertor = fn measurements -> measurements.duration / 60 end
 
