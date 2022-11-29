@@ -1,7 +1,7 @@
 defmodule InfluxTelemetryReporter.MixProject do
   use Mix.Project
 
-  @version "0.1.1"
+  @version "0.1.2"
   @description "A generic Telemetry reporter for InfluxDB/Telegraf backend"
 
   def project do
@@ -27,7 +27,7 @@ defmodule InfluxTelemetryReporter.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:telemetry, "~> 1.1"},
+      {:telemetry, "~> 0.4 or ~> 1.0"},
       {:ex_doc, ">= 0.19.0", only: :dev},
       {:fluxter, "~> 0.10", only: :dev},
       {:telemetry_metrics, "~> 0.6", only: [:dev, :test]}
