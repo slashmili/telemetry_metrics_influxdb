@@ -1,5 +1,5 @@
 # This module is based on [Telemetry.Metrics.ConsoleReporter](https://github.com/beam-telemetry/telemetry_metrics/blob/main/lib/telemetry_metrics/console_reporter.ex) which is released under Apache License 2.0
-defmodule InfluxTelemetryReporter do
+defmodule TelemetryMetricsInfluxdb do
   @moduledoc """
   A reporter that writes the events in the influx_writer.
 
@@ -20,7 +20,7 @@ defmodule InfluxTelemetryReporter do
         @impl true
         def init(_arg) do
           children = [
-            {InfluxTelemetryReporter, metrics: metrics(), influx_writer: &MyApp.Fluxter.write/3}
+            {TelemetryMetricsInfluxdb, metrics: metrics(), influx_writer: &MyApp.Fluxter.write/3}
           ]
 
           Supervisor.init(children, strategy: :one_for_one)

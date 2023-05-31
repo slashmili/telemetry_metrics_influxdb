@@ -1,12 +1,12 @@
-defmodule InfluxTelemetryReporter.MixProject do
+defmodule TelemetryMetricsInfluxdb.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "1.0.0"
   @description "A generic Telemetry reporter for InfluxDB/Telegraf backend"
 
   def project do
     [
-      app: :influx_telemetry_reporter,
+      app: :telemetry_metrics_influxdb,
       version: @version,
       elixir: "~> 1.12",
       description: @description,
@@ -36,9 +36,9 @@ defmodule InfluxTelemetryReporter.MixProject do
 
   defp docs do
     [
-      main: "InfluxTelemetryReporter",
+      main: "TelemetryMetricsInfluxdb",
       source_ref: "v#{@version}",
-      source_url: "https://github.com/slashmili/influx_telemetry_reporter"
+      source_url: "https://github.com/slashmili/telemetry_metrics_influxdb"
     ]
   end
 
@@ -46,7 +46,7 @@ defmodule InfluxTelemetryReporter.MixProject do
     %{
       licenses: ["Apache-2.0"],
       maintainers: ["Milad Rastian"],
-      links: %{"GitHub" => "https://github.com/slashmili/influx_telemetry_reporter"}
+      links: %{"GitHub" => "https://github.com/slashmili/telemetry_metrics_influxdb"}
     }
   end
 end

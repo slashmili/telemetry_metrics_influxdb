@@ -1,8 +1,8 @@
-defmodule InfluxTelemetryReporterTest do
+defmodule TelemetryMetricsInfluxdbTest do
   use ExUnit.Case, async: true
   import ExUnit.CaptureLog
 
-  alias InfluxTelemetryReporter, as: SUT
+  alias TelemetryMetricsInfluxdb, as: SUT
   alias Telemetry.Metrics
 
   describe "start_link/1" do
@@ -12,7 +12,7 @@ defmodule InfluxTelemetryReporterTest do
 
     test "has a mandatory influx_writer option" do
       assert_raise ArgumentError,
-                   "the :influx_writer option is required by InfluxTelemetryReporter",
+                   "the :influx_writer option is required by TelemetryMetricsInfluxdb",
                    fn ->
                      SUT.start_link([])
                    end
@@ -20,7 +20,7 @@ defmodule InfluxTelemetryReporterTest do
 
     test "with invalid influx_writer option" do
       assert_raise ArgumentError,
-                   "InfluxTelemetryReporter requires :influx_writer to be a function with 3 arity",
+                   "TelemetryMetricsInfluxdb requires :influx_writer to be a function with 3 arity",
                    fn ->
                      SUT.start_link(influx_writer: :boo)
                    end
@@ -28,7 +28,7 @@ defmodule InfluxTelemetryReporterTest do
 
     test "has a mandatory metrics option" do
       assert_raise ArgumentError,
-                   "the :metrics option is required by InfluxTelemetryReporter",
+                   "the :metrics option is required by TelemetryMetricsInfluxdb",
                    fn ->
                      SUT.start_link(influx_writer: fn _, _, _ -> :ok end)
                    end
