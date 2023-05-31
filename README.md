@@ -14,7 +14,7 @@ by adding `telemetry_metrics_influxdb` to your list of dependencies in `mix.exs`
 ```elixir
 def deps do
   [
-    {:telemetry_metrics_influxdb, "~> 0.1.2"}
+    {:telemetry_metrics_influxdb, "~> 1.0.0"}
   ]
 end
 ```
