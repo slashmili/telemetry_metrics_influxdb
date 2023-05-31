@@ -1,7 +1,7 @@
 defmodule TelemetryMetricsInfluxdb.MixProject do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "1.0.0"
   @description "A generic Telemetry reporter for InfluxDB/Telegraf backend"
 
   def project do
